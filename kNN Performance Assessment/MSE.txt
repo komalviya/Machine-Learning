@@ -1,0 +1,19 @@
+
+	Uniform 1-NN MSE: 0.503 ±0.346
+	Uniform 2-NN MSE: 0.862 ±0.471
+	Uniform 3-NN MSE: 1.320 ±1.418
+
+	Distance 1-NN Mean: 0.503 ±0.346
+	Distance 2-NN Mean: 0.503 ±0.346
+	Distance 3-NN Mean: 0.817 ±1.004
+
+BEST MODEL PERFORMANCE (Distance 2-NN)
+
+Accuracy : 0.981
+                                 ACTUAL VALUE
+               Celtic       Indian       South American       Japanese
+Celtic           37            0               1                 1
+Indian           0             42              0                 1
+South American   0             0               35                0
+Japanese         0             0               0                 42
+
