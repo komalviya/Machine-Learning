@@ -1,7 +1,7 @@
-#International Vibes
+# International Vibes
 Machine Learning project by Jason Boyle, Komal Malviya & Garbhan Power
 
-##kNN Model
+## kNN Model
 The current model utilises the 2 nearest neighbours to make the prediction
 and uses the "distance" weights option. The parameters were selected through:
 1) Plotting the accuracy of the model vs the number of neighbours
