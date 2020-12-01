@@ -9,7 +9,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
 from sklearn.metrics import mean_squared_error
 
-# Read in the data
+# Read in the data as inefficiently as possible :)
 df = pd.read_csv("vibes.csv", comment='#')
 X1 = df.iloc[:, 0]
 X2 = df.iloc[:, 1]
@@ -43,7 +43,33 @@ X = np.column_stack((X1, X2, X3, X4, X5, X6, X7, X8, X9, X9, X10,
                      X11, X12, X13, X14, X15, X16, X17, X18, X19, X20,
                      X21, X22, X23, X24, X25, X26))
 
+# Split data
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, shuffle=True)
+
+# Set up Figure
+fig = plt.figure()
+ax1 = fig.add_subplot(111)
+ax1.set_xlabel('# neighbours')
+ax1.set_ylabel('Accuracy')
+ax1.set_title('Number of Neighbours vs Model Accuracy using <uniform> weights')
+fig.set_size_inches(18, 10)
+
+# Create model with k = 2 & "distance" weights
+knn = KNeighborsClassifier(n_neighbors=2, weights='distance').fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+
+
+# Print out some info on the predictions
+print("Accuracy : " + str(accuracy_score(y_test, y_pred)))
+
+print("                                 ACTUAL VALUE")
+print("               Celtic       Indian       South American       Japanese")
+print("Celtic           " + str(confusion_matrix(y_test, y_pred)[0, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[0, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[0, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[0, 3]))
+print("Indian           " + str(confusion_matrix(y_test, y_pred)[1, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[1, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[1, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[1, 3]))
+print("South American   " + str(confusion_matrix(y_test, y_pred)[2, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[2, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[2, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[2, 3]))
+print("Japanese         " + str(confusion_matrix(y_test, y_pred)[3, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[3, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[3, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[3, 3]))
+
+# BELOW WAS FOR PICKING BEST PARAMATERS. UNCOMMENT IF NEEDED
 
 # fig = plt.figure()
 # ax1 = fig.add_subplot(111)
@@ -92,24 +118,3 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, shuffl
 #     neighbours += 1
 #
 # plt.show()
-
-fig = plt.figure()
-ax1 = fig.add_subplot(111)
-ax1.set_xlabel('# neighbours')
-ax1.set_ylabel('Accuracy')
-ax1.set_title('Number of Neighbours vs Model Accuracy using <uniform> weights')
-fig.set_size_inches(18, 10)
-
-knn = KNeighborsClassifier(n_neighbors=2, weights='distance').fit(X_train, y_train)
-y_pred = knn.predict(X_test)
-
-
-print("Accuracy : " + str(accuracy_score(y_test, y_pred)))
-
-print("                                 ACTUAL VALUE")
-print("               Celtic       Indian       South American       Japanese")
-print("Celtic           " + str(confusion_matrix(y_test, y_pred)[0, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[0, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[0, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[0, 3]))
-print("Indian           " + str(confusion_matrix(y_test, y_pred)[1, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[1, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[1, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[1, 3]))
-print("South American   " + str(confusion_matrix(y_test, y_pred)[2, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[2, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[2, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[2, 3]))
-print("Japanese         " + str(confusion_matrix(y_test, y_pred)[3, 0]) + "            " + str(confusion_matrix(y_test, y_pred)[3, 1]) + "               " + str(confusion_matrix(y_test, y_pred)[3, 2]) + "                " + str(confusion_matrix(y_test, y_pred)[3, 3]))
-
