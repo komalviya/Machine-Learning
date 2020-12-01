@@ -8,3 +8,5 @@ and uses the "distance" weights option. The parameters were selected through:
  (see "uniform accuracy.png" and "distance accuracy.png")
 2) Using 5-Fold cross-validation to plot the MSE mean and variance for 
 different number of neighbours (see all other pics lol)
+
+The model performs with 98.1% accuracy which is cool. 
