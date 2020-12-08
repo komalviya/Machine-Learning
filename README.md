@@ -8,13 +8,13 @@ The wav_file_30_second_split.py program is used to divide each musical sample in
 ## Feature Extraction
 The audio_featre_extraction.py program is used to extract spectral and rhythmic features from each 30 second music snippet.
 These features are:
- Zero Crossing Rate
- Spectral Contrast
- Spectral Bandwidth
- Spectral Flatness
- Spectral Rolloff
- Tempogram
- Mel Frequency Cepstral Coefficients (MFCC)
+ * Zero Crossing Rate
+ * Spectral Contrast
+ * Spectral Bandwidth
+ * Spectral Flatness
+ * Spectral Rolloff
+ * Tempogram
+ * Mel Frequency Cepstral Coefficients (MFCC)
 
 ## kNN Model
 The current model utilises the 2 nearest neighbours to make the prediction
