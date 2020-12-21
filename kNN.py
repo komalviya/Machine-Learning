@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import random
 import matplotlib.pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
@@ -7,6 +8,8 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import KFold
+from sklearn.metrics import roc_curve, auc, roc_auc_score
+from itertools import cycle
 from sklearn.metrics import mean_squared_error
 
 # Read in the data as inefficiently as possible :)
@@ -48,18 +51,112 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, shuffl
 #X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=73)
 
 # Create model with k = 2 & "distance" weights
-mean_acc = 0
-i = 0
-while i < 100:
-    knn = KNeighborsClassifier(n_neighbors=1, weights='uniform').fit(X_train, y_train)
-    y_pred = knn.predict(X_test)
-    mean_acc += accuracy_score(y_test, y_pred)
 
-    i += 1
+knn = KNeighborsClassifier(n_neighbors=1, weights='uniform').fit(X_train, y_train)
+y_pred = knn.predict(X_test)
+
+# macro_roc_auc_ovo = roc_auc_score(y_test, y_pred, multi_class="ovo",
+#                                   average="macro")
+# weighted_roc_auc_ovo = roc_auc_score(y_test, y_pred, multi_class="ovo",
+#                                      average="weighted")
+# macro_roc_auc_ovr = roc_auc_score(y_test, y_pred, multi_class="ovr",
+#                                   average="macro")
+# weighted_roc_auc_ovr = roc_auc_score(y_test, y_pred, multi_class="ovr",
+#                                      average="weighted")
+# print("One-vs-One ROC AUC scores:\n{:.6f} (macro),\n{:.6f} "
+#       "(weighted by prevalence)"
+#       .format(macro_roc_auc_ovo, weighted_roc_auc_ovo))
+# print("One-vs-Rest ROC AUC scores:\n{:.6f} (macro),\n{:.6f} "
+#       "(weighted by prevalence)"
+#       .format(macro_roc_auc_ovr, weighted_roc_auc_ovr))
+
+fpr = dict()
+tpr = dict()
+roc_auc = dict()
+b_fpr = dict()
+b_tpr = dict()
+b_roc_auc = dict()
+
+y_true = [[0 for i in range(len(y_test))] for j in range(9)]
+y_score = [[0 for i in range(len(y_test))] for j in range(9)]
+y_true = np.array(y_true)
+y_score = np.array(y_score)
+for i in range(9):
+    n = 0
+    for x in y_test:
+        if x == (i + 1):
+            y_true[i, n] = 1
+        else:
+            y_true[i, n] = 0
+        n += 1
+    n = 0
+    for x in y_pred:
+        if x == (i + 1):
+            y_score[i, n] = 1
+        else:
+            y_score[i, n] = 0
+        n += 1
+
+y_baseline = np.empty(len(y_test), dtype=object)
+for i in range(len(y_test)):
+    y_baseline[i] = random.randint(1, 9)
+
+for i in range(9):
+    fpr[i], tpr[i], _ = roc_curve(y_true[i, :], y_score[i, :])
+    roc_auc[i] = auc(fpr[i], tpr[i])
+
+for i in range(9):
+    b_fpr[i], b_tpr[i], _ = roc_curve(y_test, y_baseline, pos_label=i+1)
+    b_roc_auc[i] = auc(b_fpr[i], b_tpr[i])
 
 
-# Print out some info on the predictions
-print("Average accuracy over 100 iterations : " + str(mean_acc/100))
+all_fpr = np.unique(np.concatenate([fpr[i] for i in range(9)]))
+mean_tpr = np.zeros_like(all_fpr)
+for i in range(9):
+    mean_tpr += np.interp(all_fpr, fpr[i], tpr[i])
+
+mean_tpr /= 9
+fpr["macro"] = all_fpr
+tpr["macro"] = mean_tpr
+roc_auc["macro"] = auc(fpr["macro"], tpr["macro"])
+
+b_all_fpr = np.unique(np.concatenate([b_fpr[i] for i in range(9)]))
+b_mean_tpr = np.zeros_like(b_all_fpr)
+for i in range(9):
+    b_mean_tpr += np.interp(b_all_fpr, b_fpr[i], b_tpr[i])
+
+b_mean_tpr /= 9
+b_fpr["macro"] = b_all_fpr
+b_tpr["macro"] = b_mean_tpr
+b_roc_auc["macro"] = auc(b_fpr["macro"], b_tpr["macro"])
+
+# Plot all ROC curves
+fig = plt.figure()
+
+plt.plot(fpr["macro"], tpr["macro"],
+         label='macro-average ROC curve (AUC = {0:0.2f})'
+               ''.format(roc_auc["macro"]),
+         color='navy', linestyle=':', linewidth=4)
+
+plt.plot(b_fpr["macro"], b_tpr["macro"],
+         label='Baseline ROC curve (AUC = {0:0.2f})'
+               ''.format(b_roc_auc["macro"]),
+         color='k', linestyle='--', linewidth=3)
+
+colors = cycle(['aqua', 'darkorange', 'cornflowerblue', 'magenta', 'green', 'black', 'red', 'violet', 'gray'])
+for i, color in zip(range(9), colors):
+    plt.plot(fpr[i], tpr[i], color=color,
+             label='ROC curve of class {0} (AUC = {1:0.2f})'
+             ''.format(i+1, roc_auc[i]))
+
+plt.xlim([0.0, 1.0])
+plt.ylim([0.0, 1.05])
+fig.set_size_inches(18, 10)
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('ROC and AUC for kNN model')
+plt.legend(loc="lower right")
+plt.show()
 
 print("                                 ACTUAL VALUE")
 print("               Celtic       Indian       South American       Japanese        Mexican           French          German           African         Australian")
